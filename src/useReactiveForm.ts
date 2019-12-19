@@ -4,7 +4,7 @@ import { debounceTime, map, takeUntil } from 'rxjs/operators';
 import { ValidationError } from 'yup';
 
 /** In interface of input values */
-export interface IUseReactiveForm<T> {
+export interface IUseForm<T> {
   /** Form fields / structure */
   fields: T;
   /** If form is rendered dynamically, we need to pass a flag. True is set by default */
@@ -23,8 +23,11 @@ interface IValidationResult {
   error: string;
 }
 
+/** Тип элемента */
+type IField = HTMLInputElement | HTMLTextAreaElement;
+
 /** Interface of return values */
-interface IUseReactiveFormResult<T> {
+interface IUseFormResult<T> {
   values: () => T;
   ref: Ref<HTMLFormElement>;
   update: (f: T) => void;
@@ -33,13 +36,13 @@ interface IUseReactiveFormResult<T> {
   clear: () => void;
 }
 
-export const useReactiveForm = <T>({
+export const useForm = <T>({
                              fields,
                              schema,
                              visible = true,
                              separator = '_',
                              validateOnChange = false
-                           }: IUseReactiveForm<T>): IUseReactiveFormResult<T> => {
+                           }: IUseForm<T>): IUseFormResult<T> => {
 
   /** Deep copy object */
   const deepCopy = (obj: T): T => JSON.parse(JSON.stringify(obj));
@@ -72,7 +75,7 @@ export const useReactiveForm = <T>({
       takeUntil(unsubSub),
       debounceTime(200),
       map(cb),
-    ).subscribe((element: HTMLInputElement) => {
+    ).subscribe((element: IField) => {
 
       const type = element.getAttribute('type');
       const name = element.getAttribute('name');
@@ -83,8 +86,8 @@ export const useReactiveForm = <T>({
       }
 
       if (event === 'focus' && (type === 'radio' || type === 'checkbox')) {
-        const elements: NodeListOf<HTMLInputElement> | null = ref.current && ref.current.querySelectorAll(`[name="${name}"]`);
-        elements && elements.forEach((e: HTMLInputElement) => e.classList.add('touched'));
+        const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll(`[name="${name}"]`);
+        elements && elements.forEach((e: IField) => e.classList.add('touched'));
         return;
       }
 
@@ -94,8 +97,8 @@ export const useReactiveForm = <T>({
       }
 
       if (type === 'radio' || type === 'checkbox') {
-        const elements: NodeListOf<HTMLInputElement> | null = ref.current && ref.current.querySelectorAll(`[name="${name}"]`);
-        elements && elements.forEach((e: HTMLInputElement) => e.classList.add('dirty'));
+        const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll(`[name="${name}"]`);
+        elements && elements.forEach((e: IField) => e.classList.add('dirty'));
       } else {
         element.classList.add('dirty');
       }
@@ -127,7 +130,7 @@ export const useReactiveForm = <T>({
           event = 'keyup';
         }
 
-        const subCallback = (e: Event) => (e.target as HTMLInputElement); // callback when subscribe fires
+        const subCallback = (e: Event) => (e.target as IField); // callback when subscribe fires
 
         sub(field, event, subCallback);
         sub(field, 'focus', subCallback);
@@ -147,7 +150,7 @@ export const useReactiveForm = <T>({
   // ===================================================================================================================
 
   /** Recursion for updating form value */
-  const findKeyAndUpdateValue = (keys: string[], obj: any, element: HTMLInputElement | null, error?: string): any => {
+  const findKeyAndUpdateValue = (keys: string[], obj: any, element: IField | null, error?: string): any => {
 
     if (!keys.length) {
       return;
@@ -210,8 +213,8 @@ export const useReactiveForm = <T>({
       return true;
     }
 
-    const elements: NodeListOf<HTMLInputElement> | null = ref.current && ref.current.querySelectorAll('input.invalid');
-    elements && elements.forEach((e: HTMLInputElement) => e.classList.remove('invalid'));
+    const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll('input.invalid');
+    elements && elements.forEach((e: IField) => e.classList.remove('invalid'));
 
     const values = form.getValue();
     validationObject.next(deepCopy(values));
@@ -231,8 +234,8 @@ export const useReactiveForm = <T>({
         findKeyAndUpdateValue(keys, errors, null, item.message);
 
         const selector = item.path.replace(/[[.]/g, separator).replace(/]/g, '');
-        const elements: NodeListOf<HTMLInputElement> | null = ref.current && ref.current.querySelectorAll(`[name="${selector}"]`);
-        elements && elements.forEach((e: HTMLInputElement) => e.classList.add('invalid'));
+        const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll(`[name="${selector}"]`);
+        elements && elements.forEach((e: IField) => e.classList.add('invalid'));
       });
 
       validationObject.next(deepCopy(errors));
@@ -244,7 +247,7 @@ export const useReactiveForm = <T>({
   // ===================================================================================================================
 
   /** Validate when value of input changed */
-  const dynamicValidation = (name: string | null, values: T, element: HTMLInputElement) => {
+  const dynamicValidation = (name: string | null, values: T, element: IField) => {
     const path = name ? name.replace(new RegExp(separator, 'g'), '_')
       .replace(/_(?=\d+)/g, '[')
       .replace(/(?<=\d)_/g, ']')
@@ -272,8 +275,8 @@ export const useReactiveForm = <T>({
     validationObject.next(deepCopy(errors));
 
     if (type === 'radio' || type === 'checkbox') {
-      const elements: NodeListOf<HTMLInputElement> | null = ref.current && ref.current.querySelectorAll(`[name="${name}"]`);
-      elements && elements.forEach((e: HTMLInputElement) => {
+      const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll(`[name="${name}"]`);
+      elements && elements.forEach((e: IField) => {
         valid ? e.classList.remove('invalid') : e.classList.add('invalid')
       });
     } else {
