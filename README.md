@@ -10,8 +10,8 @@ has not changed, component **will not** re-render.
 3. Call `update()` function.
 ___
 
-###Instructions:
 
+###Instructions:
 #### Step 1: Describe initial values and interface.
 
     interface IFormData = {
