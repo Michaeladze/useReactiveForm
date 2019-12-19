@@ -4,7 +4,7 @@ import { debounceTime, map, takeUntil } from 'rxjs/operators';
 import { ValidationError } from 'yup';
 
 /** In interface of input values */
-export interface IUseForm<T> {
+export interface IUseReactiveForm<T> {
   /** Form fields / structure */
   fields: T;
   /** If form is rendered dynamically, we need to pass a flag. True is set by default */
@@ -36,13 +36,13 @@ interface IUseFormResult<T> {
   clear: () => void;
 }
 
-export const useForm = <T>({
+export const useReactiveForm = <T>({
                              fields,
                              schema,
                              visible = true,
                              separator = '_',
                              validateOnChange = false
-                           }: IUseForm<T>): IUseFormResult<T> => {
+                           }: IUseReactiveForm<T>): IUseFormResult<T> => {
 
   /** Deep copy object */
   const deepCopy = (obj: T): T => JSON.parse(JSON.stringify(obj));
