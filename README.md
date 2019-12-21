@@ -2,7 +2,17 @@
 
 React hook for gathering form data without unnecessary re-renders. 
 
-You can find an example [here](https://stackblitz.com/edit/react-ts-edmmec?file=Example.tsx)
+**Links:**  
+[1. Example](https://stackblitz.com/edit/react-ts-edmmec?file=Example.tsx)   
+[2. NPM](https://www.npmjs.com/package/use-reactive-form)
+
+### Install:
+
+    npm install use-reactive-form
+
+    yarn add use-reactive-form
+
+### Usage:
 
 The idea is that form state is stored in `BehaviorSubject` from `rxjs`. When it changes,
 it does not re-render the component. Ways to re-render form:
@@ -11,9 +21,7 @@ it does not re-render the component. Ways to re-render form:
 has not changed, the component **will not** re-render.
 3. Call `update()` function.
 ___
-``
 
-### Instructions:
 #### Step 1: Describe initial values and interface.
 
     interface IFormData = {
