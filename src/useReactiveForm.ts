@@ -15,6 +15,8 @@ export interface IUseReactiveForm<T> {
   separator?: string;
   /** Validate input on change */
   validateOnChange?: boolean;
+  /** Action on change */
+  actionOnChange?: (values: T) => void;
 }
 
 /** Validation object */
@@ -37,12 +39,13 @@ interface IUseFormResult<T> {
 }
 
 export const useReactiveForm = <T>({
-                             fields,
-                             schema,
-                             visible = true,
-                             separator = '_',
-                             validateOnChange = false
-                           }: IUseReactiveForm<T>): IUseFormResult<T> => {
+                                     fields,
+                                     schema,
+                                     visible = true,
+                                     separator = '_',
+                                     validateOnChange = false,
+                                     actionOnChange
+                                   }: IUseReactiveForm<T>): IUseFormResult<T> => {
 
   /** Deep copy object */
   const deepCopy = (obj: T): T => JSON.parse(JSON.stringify(obj));
@@ -69,6 +72,27 @@ export const useReactiveForm = <T>({
 
   // ===================================================================================================================
 
+  /** Action callback subscription */
+  const action = (selector: HTMLElement, event: string, cb: (a: Event) => any) => {
+    fromEvent(selector, event).pipe(
+      takeUntil(unsubSub),
+      debounceTime(300),
+      map(cb),
+    ).subscribe((element: IField) => {
+
+      const name = element.getAttribute('name');
+
+      /** Refresh values and errors with new value */
+      const values = getValues();
+      findKeyAndUpdateValue(name ? name.split(separator) : [], values, element);
+      form.next(values);
+
+      actionOnChange && actionOnChange(values);
+    });
+  };
+
+  // ===================================================================================================================
+
   /** Event subscription */
   const sub = (selector: HTMLElement, event: string, cb: (a: Event) => any) => {
     fromEvent(selector, event).pipe(
@@ -79,6 +103,11 @@ export const useReactiveForm = <T>({
 
       const type = element.getAttribute('type');
       const name = element.getAttribute('name');
+
+      /** Refresh values and errors with new value */
+      const values = getValues();
+      findKeyAndUpdateValue(name ? name.split(separator) : [], values, element);
+      form.next(values);
 
       /** We don't need blur event on radio or checkboxes */
       if (event === 'blur' && (type === 'radio' || type === 'checkbox')) {
@@ -102,11 +131,6 @@ export const useReactiveForm = <T>({
       } else {
         element.classList.add('dirty');
       }
-
-      /** Refresh values and errors with new value */
-      const values = getValues();
-      findKeyAndUpdateValue(name ? name.split(separator) : [], values, element);
-      form.next(values);
 
       /** Run validation */
       validateOnChange && dynamicValidation(name, values, element);
@@ -132,9 +156,13 @@ export const useReactiveForm = <T>({
 
         const subCallback = (e: Event) => (e.target as IField); // callback when subscribe fires
 
-        sub(field, event, subCallback);
-        sub(field, 'focus', subCallback);
-        sub(field, 'blur', subCallback);
+        if (actionOnChange) {
+          action(field, event, subCallback);
+        } else {
+          sub(field, event, subCallback);
+          sub(field, 'focus', subCallback);
+          sub(field, 'blur', subCallback);
+        }
       })
     }
     return () => unsubSub.next(Date.now());
@@ -227,7 +255,7 @@ export const useReactiveForm = <T>({
     } catch (e) {
       const errors = validationObject.getValue();
 
-      (e as ValidationError).inner.forEach((item: ValidationError) => {
+      e.inner.forEach((item: ValidationError) => {
 
         /** Fill validationObject with error messages */
         const keys = item.path.split(/\[|].|\./);
@@ -257,6 +285,8 @@ export const useReactiveForm = <T>({
     let shouldUpdate;
     let valid: boolean;
 
+    const isDropdownElement: boolean = element.getAttribute('data-dropdown-element') === 'true';
+
     const errors = validationObject.getValue();
     const keys = name ? name.split(separator) : [];
 
@@ -283,7 +313,11 @@ export const useReactiveForm = <T>({
       valid ? element.classList.remove('invalid') : element.classList.add('invalid');
     }
 
-    shouldUpdate && reload(Date.now());
+    if (isDropdownElement) {
+      reload(Date.now())
+    } else {
+      shouldUpdate && reload(Date.now());
+    }
   };
 
   // ===================================================================================================================

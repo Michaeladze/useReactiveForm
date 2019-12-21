@@ -64,7 +64,8 @@ ___
     visible?: boolean - If form is rendered dynamically, we need to pass a flag. True is set by default  
     schema?: any - Validation schema  
     separator?: string - Separator for name property of inputs. _ is set by default  
-    validateOnChange?: boolean - Validate input on change  
+    validateOnChange?: boolean - Validate on input change
+    actionOnChange?: (values: T) => void - Fire function on input change
 
 #### Step 4: Use Hook
 

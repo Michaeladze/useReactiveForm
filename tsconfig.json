@@ -1,16 +1,20 @@
 {
-  "include": ["src", "types"],
+  "include": ["./src/*", "types"],
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
     "module": "esnext",
-    "lib": ["dom", "esnext"],
+    "lib": ["dom", "es6"],
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,
-    "rootDir": "./",
+    "outDir": "./lib",
+    "jsx": "react",
+    "moduleResolution": "node",
+    "baseUrl": "src",
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
+    "removeComments": true,
     "strictFunctionTypes": true,
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
@@ -19,12 +23,6 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "node",
-    "baseUrl": "./",
-    "paths": {
-      "*": ["src/*", "node_modules/*"]
-    },
-    "jsx": "react",
     "esModuleInterop": true
   }
 }

@@ -1,4 +1,4 @@
-import { IUseReactiveForm, useReactiveForm } from 'useReactiveForm';
+import { IUseReactiveForm, useReactiveForm } from './useReactiveForm';
 
 export {
   useReactiveForm,
