@@ -2,6 +2,8 @@
 
 React hook for gathering form data with out unnecessary re-renders. 
 
+You can find example [here](https://stackblitz.com/edit/react-ts-edmmec?file=Example.tsx)
+
 The idea is that form state is stored in `BehaviorSubject` from `rxjs`. When it changes,
 it does not re-render the component. Ways to re-render form:
 1. Call `validate()` function.
