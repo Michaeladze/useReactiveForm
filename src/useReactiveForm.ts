@@ -104,11 +104,6 @@ export const useReactiveForm = <T>({
       const type = element.getAttribute('type');
       const name = element.getAttribute('name');
 
-      /** Refresh values and errors with new value */
-      const values = getValues();
-      findKeyAndUpdateValue(name ? name.split(separator) : [], values, element);
-      form.next(values);
-
       /** We don't need blur event on radio or checkboxes */
       if (event === 'blur' && (type === 'radio' || type === 'checkbox')) {
         return;
@@ -131,6 +126,11 @@ export const useReactiveForm = <T>({
       } else {
         element.classList.add('dirty');
       }
+
+      /** Refresh values and errors with new value */
+      const values = getValues();
+      findKeyAndUpdateValue(name ? name.split(separator) : [], values, element);
+      form.next(values);
 
       /** Run validation */
       validateOnChange && dynamicValidation(name, values, element);
@@ -198,7 +198,6 @@ export const useReactiveForm = <T>({
       if (element) {
         /** If checkbox then check the presence of the value in array */
         if (element.getAttribute('type') === 'checkbox') {
-
           if (!Array.isArray(obj[keys[0]])) {
             obj[keys[0]] = [];
           }
@@ -256,6 +255,7 @@ export const useReactiveForm = <T>({
       const errors = validationObject.getValue();
 
       e.inner.forEach((item: ValidationError) => {
+        errorsMap.set(item.path, e.message);
 
         /** Fill validationObject with error messages */
         const keys = item.path.split(/\[|].|\./);
@@ -285,6 +285,7 @@ export const useReactiveForm = <T>({
     let shouldUpdate;
     let valid: boolean;
 
+    // Reload for visual change
     const isDropdownElement: boolean = element.getAttribute('data-dropdown-element') === 'true';
 
     const errors = validationObject.getValue();
@@ -293,13 +294,13 @@ export const useReactiveForm = <T>({
     try {
       schema.validateSyncAt(path, values);
       valid = true;
-      shouldUpdate = errorsMap.get(name) !== '' && errorsMap.get(name) !== undefined;
-      errorsMap.set(name, '');
+      shouldUpdate = errorsMap.get(path) !== '' && errorsMap.get(path) !== undefined;
+      errorsMap.set(path, '');
       findKeyAndUpdateValue(keys, errors, element);
     } catch (e) {
       valid = false;
-      shouldUpdate = errorsMap.get(name) !== e.message;
-      errorsMap.set(name, findKeyAndUpdateValue(keys, errors, element, e.message).error);
+      shouldUpdate = errorsMap.get(path) !== e.message;
+      errorsMap.set(path, findKeyAndUpdateValue(keys, errors, element, e.message).error);
     }
 
     validationObject.next(deepCopy(errors));

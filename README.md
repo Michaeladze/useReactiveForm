@@ -138,3 +138,8 @@ Lets say you want to add new book. You will need to copy `values()` and push new
       };
       
     <button type='button' onClick={addBook}> Add book </button>
+
+___
+#### Action on input change.
+`actionOnChange` is a parameter, which you may want to set to `true` when you have to fire 
+a function when any of the inputs value changes. It may be desirable when you submit form dynamically.
