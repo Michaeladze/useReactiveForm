@@ -1,17 +1,17 @@
 # useReactiveForm
 
-React hook for gathering form data with out unnecessary re-renders. 
+React hook for gathering form data without unnecessary re-renders. 
 
-You can find example [here](https://stackblitz.com/edit/react-ts-edmmec?file=Example.tsx)
+You can find an example [here](https://stackblitz.com/edit/react-ts-edmmec?file=Example.tsx)
 
 The idea is that form state is stored in `BehaviorSubject` from `rxjs`. When it changes,
 it does not re-render the component. Ways to re-render form:
 1. Call `validate()` function.
 2. Use `validateOnChange: true` which is basically the same as #1. If after validation message of the error
-has not changed, component **will not** re-render.
+has not changed, the component **will not** re-render.
 3. Call `update()` function.
 ___
-
+``
 
 ### Instructions:
 #### Step 1: Describe initial values and interface.
@@ -118,8 +118,8 @@ ___
 Notice, that you have to describe `name` attribute as a path to the key in your form object.
 But instead of common separators (`.`, `[]`) use `_` or your separator described in `config`.  
 
-To get error message just call `getError()` function. It returns object with the same structure as your
-form object, but instead of just values it contains object `{ value: string, error: string }`. 
+To get error message just call `getError()` function. It returns an object with the same structure as your
+form object, but instead of just values, it contains object `{ value: string, error: string }`. 
 Therefore, error message for `user` field is located in `getErrors().user.error`.
 
 Any action triggered on the `<input/>` will provide it with one of the following classes:   `touched`, `dirty` or `invalid`.
@@ -127,7 +127,7 @@ ___
 #### Dynamic fields.
 
 If you want to add some fields dynamically, you need to use `update()` function. 
-Lets say you want to add new book. You will need to copy `values()` and push new book object to the `values().books` array.
+Let's say you want to add a new book. You will need to copy `values()` and push a new book object to the `values().books` array.
 
     const addBook = () => {
         update({
