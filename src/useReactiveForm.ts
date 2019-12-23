@@ -79,7 +79,7 @@ export const useReactiveForm = <T>({
       debounceTime(300),
       map(cb),
     ).subscribe((element: IField) => {
-
+      const isSelect: boolean = element.getAttribute('data-select') === 'true';
       const name = element.getAttribute('name');
 
       /** Refresh values and errors with new value */
@@ -88,6 +88,10 @@ export const useReactiveForm = <T>({
       form.next(values);
 
       actionOnChange && actionOnChange(values);
+
+      if (isSelect) {
+        reload(Date.now())
+      }
     });
   };
 
@@ -148,10 +152,15 @@ export const useReactiveForm = <T>({
       const selectors = ref.current.querySelectorAll('[name]');
       selectors.forEach((field: any) => {
         let event = 'click';
+        const isSelect: boolean = field.getAttribute('data-select') === 'true';
 
         if ((field.nodeName === 'INPUT' && field.getAttribute('type') === 'text') ||
           field.nodeName === 'TEXTAREA') {
           event = 'keyup';
+        }
+
+        if (field.nodeName === 'SELECT' || isSelect) {
+          event = 'input'
         }
 
         const subCallback = (e: Event) => (e.target as IField); // callback when subscribe fires
@@ -286,7 +295,7 @@ export const useReactiveForm = <T>({
     let valid: boolean;
 
     // Reload for visual change
-    const isDropdownElement: boolean = element.getAttribute('data-dropdown-element') === 'true';
+    const isSelect: boolean = element.getAttribute('data-select') === 'true';
 
     const errors = validationObject.getValue();
     const keys = name ? name.split(separator) : [];
@@ -314,7 +323,7 @@ export const useReactiveForm = <T>({
       valid ? element.classList.remove('invalid') : element.classList.add('invalid');
     }
 
-    if (isDropdownElement) {
+    if (isSelect) {
       reload(Date.now())
     } else {
       shouldUpdate && reload(Date.now());

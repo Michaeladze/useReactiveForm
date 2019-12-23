@@ -1,16 +1,26 @@
 {
   "name": "use-reactive-form",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "license": "MIT",
   "author": {
     "name": "Michael Kutateladze",
     "email": "michael.kutateladze@gmail.com"
   },
+  "contributors": [
+    {
+      "name": "Anton Pugachev",
+      "url": ""
+    }
+  ],
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
     "lib"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Michaeladze/useReactiveForm"
+  },
   "keywords": [
     "react",
     "form",
