@@ -4,8 +4,8 @@ React hook for gathering and validating form data without unnecessary re-renders
 
 **Links:**  
 [1. Example](https://stackblitz.com/edit/react-ts-edmmec?file=Example.tsx)   
-[2. NPM](https://www.npmjs.com/package/use-reactive-form)
-[3. Github](https://github.com/Michaeladze/useReactiveForm)
+[2. NPM](https://www.npmjs.com/package/use-reactive-form)  
+[3. GitHub](https://github.com/Michaeladze/useReactiveForm)
 
 ### Install:
 
