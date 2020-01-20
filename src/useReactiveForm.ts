@@ -2,7 +2,22 @@ import { Ref, useEffect, useRef, useState } from 'react';
 import { BehaviorSubject, fromEvent, Subject } from 'rxjs';
 import { debounceTime, map, takeUntil } from 'rxjs/operators';
 import { ValidationError } from 'yup';
-import { IUseReactiveForm } from './index';
+
+/** In interface of input values */
+export interface IUseReactiveForm<T> {
+  /** Form fields / structure */
+  fields: T;
+  /** If form is rendered dynamically, we need to pass a flag. True is set by default */
+  visible?: boolean;
+  /** Validation schema */
+  schema?: any;
+  /** Separator for name property of inputs. _ is set by default */
+  separator?: string;
+  /** Validate input on change */
+  validateOnChange?: boolean;
+  /** Action on change */
+  actionOnChange?: (values: T) => void;
+}
 
 /** Validation object */
 export interface IValidationResult {
@@ -19,7 +34,7 @@ export interface IUseFormResult<T> {
   ref: Ref<HTMLFormElement>;
   update: (f: T) => void;
   validate: () => boolean;
-  getErrors: () => T | IValidationResult;
+  getErrors: () => any;
   clear: () => void;
 }
 
@@ -234,7 +249,7 @@ export const useReactiveForm = <T>({
       return true;
     }
 
-    const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll('input.invalid');
+    const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll('input.invalid, textarea.invalid');
     elements && elements.forEach((e: IField) => e.classList.remove('invalid'));
 
     const values = form.getValue();
