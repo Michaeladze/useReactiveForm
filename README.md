@@ -8,10 +8,9 @@ React hook for gathering and validating form data without unnecessary re-renders
 [3. GitHub](https://github.com/Michaeladze/useReactiveForm)
 
 ### Install:
-
     npm install use-reactive-form
-
     yarn add use-reactive-form
+
 
 ### Usage:
 
