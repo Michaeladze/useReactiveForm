@@ -160,7 +160,8 @@ export const useReactiveForm = <T>({
         }
 
         if (field.nodeName === 'SELECT' || isSelect) {
-          event = 'input'
+          // для ie поменяла событие с input на change
+          event = 'change'
         }
 
         const subCallback = (e: Event) => (e.target as IField); // callback when subscribe fires
@@ -285,10 +286,12 @@ export const useReactiveForm = <T>({
 
   /** Validate when value of input changed */
   const dynamicValidation = (name: string | null, values: T, element: IField) => {
-    const path = name ? name.replace(new RegExp(separator, 'g'), '_')
-      .replace(/_(?=\d+)/g, '[')
-      .replace(/(?<=\d)_/g, ']')
-      .replace(/](?=\w)/g, '].') : '';
+    let path;
+    path = name ? name.replace(new RegExp(separator, 'g'), '_')
+        .replace(/(_)/g, (_, sign: string, offset: number) =>
+            /\d/g.test(name[offset + 1]) ? '[' : /\d/g.test(name[offset - 1]) ? ']' : sign)
+        .replace(/(])/g, (_, sign: string, offset: number) =>
+            /\w/g.test(name[offset + 1]) ? '].' : sign) : '';
 
     const type = element.getAttribute('type');
     let shouldUpdate;
