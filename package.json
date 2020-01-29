@@ -1,6 +1,6 @@
 {
   "name": "use-reactive-form",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "license": "MIT",
   "author": {
     "name": "Michael Kutateladze",
@@ -9,6 +9,10 @@
   "contributors": [
     {
       "name": "Anton Pugachev",
+      "url": ""
+    },
+    {
+      "name": "Lena Golovko",
       "url": ""
     }
   ],
