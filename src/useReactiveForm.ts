@@ -9,6 +9,8 @@ export interface IUseReactiveForm<T> {
   fields: T;
   /** If form is rendered dynamically, we need to pass a flag. True is set by default */
   visible?: boolean;
+  /** Dependencies */
+  deps: boolean[];
   /** Validation schema */
   schema?: any;
   /** Separator for name property of inputs. _ is set by default */
@@ -42,9 +44,10 @@ export const useReactiveForm = <T>({
                                      fields,
                                      schema,
                                      visible = true,
+                                     deps = [],
                                      separator = '_',
                                      validateOnChange = false,
-                                     actionOnChange
+                                     actionOnChange,
                                    }: IUseReactiveForm<T>): IUseFormResult<T> => {
 
   /** Deep copy object */
@@ -90,7 +93,7 @@ export const useReactiveForm = <T>({
       actionOnChange && actionOnChange(values);
 
       if (isSelect) {
-        reload(Date.now())
+        reload(Date.now());
       }
     });
   };
@@ -154,14 +157,15 @@ export const useReactiveForm = <T>({
         let event = 'click';
         const isSelect: boolean = field.getAttribute('data-select') === 'true';
 
-        if ((field.nodeName === 'INPUT' && field.getAttribute('type') === 'text') ||
+        if ((field.nodeName === 'INPUT' && (field.getAttribute('type') === 'text' ||
+          field.getAttribute('type') === 'password')) ||
           field.nodeName === 'TEXTAREA') {
           event = 'keyup';
         }
 
         if (field.nodeName === 'SELECT' || isSelect) {
           // для ie поменяла событие с input на change
-          event = 'change'
+          event = 'change';
         }
 
         const subCallback = (e: Event) => (e.target as IField); // callback when subscribe fires
@@ -173,7 +177,7 @@ export const useReactiveForm = <T>({
           sub(field, 'focus', subCallback);
           sub(field, 'blur', subCallback);
         }
-      })
+      });
     }
     return () => unsubSub.next(Date.now());
   }, [time]);
@@ -182,8 +186,8 @@ export const useReactiveForm = <T>({
 
   /** Refresh form when visibility changes */
   useEffect(() => {
-    visible && update(fields);
-  }, [visible]);
+    visible && deps.every((b: boolean) => b) && update(fields);
+  }, [visible, ...deps]);
 
   // ===================================================================================================================
 
@@ -199,7 +203,7 @@ export const useReactiveForm = <T>({
       if (error) {
         obj[keys[0]] = {
           value: obj[keys[0]],
-          error: error
+          error: error,
         };
 
         return obj[keys[0]];
@@ -288,10 +292,10 @@ export const useReactiveForm = <T>({
   const dynamicValidation = (name: string | null, values: T, element: IField) => {
     let path;
     path = name ? name.replace(new RegExp(separator, 'g'), '_')
-        .replace(/(_)/g, (_, sign: string, offset: number) =>
-            /\d/g.test(name[offset + 1]) ? '[' : /\d/g.test(name[offset - 1]) ? ']' : sign)
-        .replace(/(])/g, (_, sign: string, offset: number) =>
-            /\w/g.test(name[offset + 1]) ? '].' : sign) : '';
+      .replace(/(_)/g, (_, sign: string, offset: number) =>
+        /\d/g.test(name[offset + 1]) ? '[' : /\d/g.test(name[offset - 1]) ? ']' : sign)
+      .replace(/(])/g, (_, sign: string, offset: number) =>
+        /\w/g.test(name[offset + 1]) ? '].' : sign) : '';
 
     const type = element.getAttribute('type');
     let shouldUpdate;
@@ -320,14 +324,14 @@ export const useReactiveForm = <T>({
     if (type === 'radio' || type === 'checkbox') {
       const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll(`[name="${name}"]`);
       elements && elements.forEach((e: IField) => {
-        valid ? e.classList.remove('invalid') : e.classList.add('invalid')
+        valid ? e.classList.remove('invalid') : e.classList.add('invalid');
       });
     } else {
       valid ? element.classList.remove('invalid') : element.classList.add('invalid');
     }
 
     if (isSelect) {
-      reload(Date.now())
+      reload(Date.now());
     } else {
       shouldUpdate && reload(Date.now());
     }
@@ -340,5 +344,5 @@ export const useReactiveForm = <T>({
 
   // ===================================================================================================================
 
-  return { values: getValues, ref, update, validate, getErrors, clear }
+  return { values: getValues, ref, update, validate, getErrors, clear };
 };
