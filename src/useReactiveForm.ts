@@ -10,7 +10,7 @@ export interface IUseReactiveForm<T> {
   /** If form is rendered dynamically, we need to pass a flag. True is set by default */
   visible?: boolean;
   /** Dependencies */
-  deps: boolean[];
+  deps?: boolean[];
   /** Validation schema */
   schema?: any;
   /** Separator for name property of inputs. _ is set by default */
