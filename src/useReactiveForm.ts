@@ -10,7 +10,7 @@ export interface IUseReactiveForm<T> {
   /** If form is rendered dynamically, we need to pass a flag. True is set by default */
   visible?: boolean;
   /** Dependencies */
-  deps?: boolean[];
+  deps?: any[];
   /** Validation schema */
   schema?: any;
   /** Separator for name property of inputs. _ is set by default */
@@ -19,6 +19,8 @@ export interface IUseReactiveForm<T> {
   validateOnChange?: boolean;
   /** Action on change */
   actionOnChange?: (values: T) => void;
+  /** Update when specific name changes */
+  updateTriggers?: string[];
 }
 
 /** Validation object */
@@ -48,6 +50,7 @@ export const useReactiveForm = <T>({
                                      separator = '_',
                                      validateOnChange = false,
                                      actionOnChange,
+                                     updateTriggers = []
                                    }: IUseReactiveForm<T>): IUseFormResult<T> => {
 
   /** Deep copy object */
@@ -141,6 +144,11 @@ export const useReactiveForm = <T>({
 
       /** Run validation */
       validateOnChange && dynamicValidation(name, values, element);
+
+      /** Update on names change */
+      if (updateTriggers && name && updateTriggers.indexOf(name) >= 0) {
+        update(values);
+      }
     });
   };
 
@@ -186,7 +194,7 @@ export const useReactiveForm = <T>({
 
   /** Refresh form when visibility changes */
   useEffect(() => {
-    visible && deps.every((b: boolean) => b) && update(fields);
+    visible && update(fields);
   }, [visible, ...deps]);
 
   // ===================================================================================================================
