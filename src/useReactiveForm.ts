@@ -133,7 +133,7 @@ export const useReactiveForm = <T>({
       if (type === 'radio' || type === 'checkbox') {
         const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll(`[name="${name}"]`);
         elements && elements.forEach((e: IField) => e.classList.add('dirty'));
-      } else {
+      } else if (event === 'keyup') {
         element.classList.add('dirty');
       }
 
