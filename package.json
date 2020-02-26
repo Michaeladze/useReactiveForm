@@ -1,6 +1,6 @@
 {
   "name": "use-reactive-form",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "license": "MIT",
   "author": {
     "name": "Michael Kutateladze",
@@ -9,11 +9,15 @@
   "contributors": [
     {
       "name": "Anton Pugachev",
-      "url": ""
+      "url": "https://github.com/mun4kin"
     },
     {
       "name": "Lena Golovko",
-      "url": ""
+      "url": "https://github.com/elenagolovko"
+    },
+    {
+      "name": "Anna Darina",
+      "url": "https://github.com/annadarina"
     }
   ],
   "main": "lib/index.js",
