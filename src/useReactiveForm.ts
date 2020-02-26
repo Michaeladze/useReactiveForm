@@ -115,12 +115,8 @@ export const useReactiveForm = <T>({
       const name = element.getAttribute('name');
 
       /** We don't need blur event on radio or checkboxes */
-      if (event === 'blur') {
-        if (type === 'radio' || type === 'checkbox') {
-          return;
-        } else {
-          element.classList.remove('touched');
-        }
+      if (event === 'blur' && (type === 'radio' || type === 'checkbox')) {
+        return;
       }
 
       if (event === 'focus' && (type === 'radio' || type === 'checkbox')) {
@@ -137,10 +133,8 @@ export const useReactiveForm = <T>({
       if (type === 'radio' || type === 'checkbox') {
         const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll(`[name="${name}"]`);
         elements && elements.forEach((e: IField) => e.classList.add('dirty'));
-      } else {
-        if (event === 'keyup') {
-          element.classList.add('dirty');
-        }
+      } else if (event === 'keyup') {
+        element.classList.add('dirty');
       }
 
       /** Refresh values and errors with new value */
