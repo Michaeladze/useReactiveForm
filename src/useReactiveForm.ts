@@ -39,6 +39,7 @@ export interface IUseFormResult<T> {
   update: (f: T) => void;
   validate: () => boolean;
   getErrors: () => any;
+  errors: () => any;
   clear: () => void;
 }
 
@@ -352,5 +353,5 @@ export const useReactiveForm = <T>({
 
   // ===================================================================================================================
 
-  return { values: getValues, ref, update, validate, getErrors, clear };
+  return { values: getValues, ref, update, validate, getErrors, clear, errors: getErrors };
 };

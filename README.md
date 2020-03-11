@@ -87,7 +87,8 @@ ___
     values() - get current form state
     ref - reference to <form> tag
     validate() - function which validates the form
-    getErrors() - function which gets errors after validation
+    getErrors() - function which gets errors after validation [Will be deprecated] 
+    errors() - function which gets errors after validation [Use this instead of getErrors] 
     clear() - function which form values form and errors
     update() - function which re-renders form. It is needed in case when you dynamically add fields.
     **/
