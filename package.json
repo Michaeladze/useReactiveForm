@@ -1,6 +1,6 @@
 {
   "name": "use-reactive-form",
-  "version": "0.4.5",
+  "version": "1.0.0",
   "license": "MIT",
   "author": {
     "name": "Michael Kutateladze",
@@ -32,8 +32,7 @@
   "keywords": [
     "react",
     "form",
-    "hooks",
-    "rxjs"
+    "hooks"
   ],
   "scripts": {
     "build": "rm ./lib/* && tsc",
@@ -51,13 +50,12 @@
   "dependencies": {
   },
   "devDependencies": {
-    "@types/jest": "24.0.23",
-    "@types/react": "16.9.7",
-    "@types/yup": "0.26.26",
+    "@types/jest": "24.9.1",
+    "@types/react": "16.9.35",
+    "@types/yup": "0.29.0",
     "tslib": "1.10.0",
-    "typescript": "3.7.3",
+    "typescript": "3.9.3",
     "yup": "0.27.0",
-    "rxjs": "6.5.3",
-    "react": "16.8.6"
+    "react": "16.13.1"
   }
 }

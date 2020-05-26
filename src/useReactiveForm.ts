@@ -1,14 +1,9 @@
-import { Ref, useEffect, useRef, useState } from 'react';
-import { BehaviorSubject, fromEvent, Subject } from 'rxjs';
-import { debounceTime, map, takeUntil } from 'rxjs/operators';
-import { ValidationError } from 'yup';
+import { Ref, useCallback, useEffect, useRef, useState } from 'react';
 
 /** In interface of input values */
 export interface IUseReactiveForm<T> {
   /** Form fields / structure */
   fields: T;
-  /** If form is rendered dynamically, we need to pass a flag. True is set by default */
-  visible?: boolean;
   /** Dependencies */
   deps?: any[];
   /** Validation schema */
@@ -23,30 +18,22 @@ export interface IUseReactiveForm<T> {
   updateTriggers?: string[];
 }
 
-/** Validation object */
-export interface IValidationResult {
-  value: string;
-  error: string;
-}
-
-/** Тип элемента */
+/** Element type */
 export type IField = HTMLInputElement | HTMLTextAreaElement;
 
 /** Interface of return values */
 export interface IUseFormResult<T> {
-  values: () => T;
+  values: T;
   ref: Ref<HTMLFormElement>;
   update: (f: T) => void;
   validate: () => boolean;
-  getErrors: () => any;
-  errors: () => any;
+  errors: any;
   clear: () => void;
 }
 
 export const useReactiveForm = <T>({
                                      fields,
                                      schema,
-                                     visible = true,
                                      deps = [],
                                      separator = '_',
                                      validateOnChange = false,
@@ -54,79 +41,61 @@ export const useReactiveForm = <T>({
                                      updateTriggers = []
                                    }: IUseReactiveForm<T>): IUseFormResult<T> => {
 
-  /** Deep copy object */
-  const deepCopy = (obj: T): T => JSON.parse(JSON.stringify(obj));
+    /** Deep copy object */
+    const deepCopy = useCallback((obj: T): T => JSON.parse(JSON.stringify(obj)), []);
 
-  /** Form reference */
-  const ref = useRef<HTMLFormElement>(null);
-  /** Unsubscribe from subject */
-  const unsubSub = new Subject();
-  /** Reload function */
-  const [time, reload] = useState(0);
-  /** Form data */
-  const [form] = useState(new BehaviorSubject<T>(fields));
-  /** Validation object */
-  let [validationObject] = useState(new BehaviorSubject<T>(deepCopy(fields)));
-  /** Errors map for preventing re-renders on same error on dynamic validation */
-  const [errorsMap] = useState(new Map());
+    /** Form reference */
+    const ref = useRef<HTMLFormElement>(null);
+    /** Reload function */
+    const [time, reload] = useState(0);
+    /** Form data */
+    let form = useRef<T>(fields);
+    /** Validation object */
+    let validationObject = useRef(deepCopy(fields));
+    /** Errors map for preventing re-renders on same error on dynamic validation */
+    const errorsMap = useRef(new Map());
 
-  // ===================================================================================================================
+    // ===================================================================================================================
 
-  /** Get values */
-  const getValues = () => form.getValue();
-  /** Get errors */
-  const getErrors = () => validationObject.getValue();
-
-  // ===================================================================================================================
-
-  /** Action callback subscription */
-  const action = (selector: HTMLElement, event: string, cb: (a: Event) => any) => {
-    fromEvent(selector, event).pipe(
-      takeUntil(unsubSub),
-      debounceTime(300),
-      map(cb),
-    ).subscribe((element: IField) => {
+    /** Action callback subscription */
+    const action = (e: Event) => {
+      const element = e.target as IField;
       const isSelect: boolean = element.getAttribute('data-select') === 'true';
       const name = element.getAttribute('name');
 
       /** Refresh values and errors with new value */
-      const values = getValues();
-      findKeyAndUpdateValue(name ? name.split(separator) : [], values, element);
-      form.next(values);
+      const keys = name ? name.split(separator) : [];
+      findKeyAndUpdateValue(keys, form.current, element);
+      findKeyAndUpdateValue(keys, validationObject.current, element);
 
-      actionOnChange && actionOnChange(values);
+      actionOnChange && actionOnChange(form.current);
 
       if (isSelect) {
         reload(Date.now());
       }
-    });
-  };
+    };
 
-  // ===================================================================================================================
+// ===================================================================================================================
 
-  /** Event subscription */
-  const sub = (selector: HTMLElement, event: string, cb: (a: Event) => any) => {
-    fromEvent(selector, event).pipe(
-      takeUntil(unsubSub),
-      debounceTime(200),
-      map(cb),
-    ).subscribe((element: IField) => {
+    /** Event subscription */
+    const sub = (e: Event) => {
+      const element = e.target as IField;
 
       const type = element.getAttribute('type');
       const name = element.getAttribute('name');
 
       /** We don't need blur event on radio or checkboxes */
-      if (event === 'blur' && (type === 'radio' || type === 'checkbox')) {
+      if (e.type === 'blur' && (type === 'radio' || type === 'checkbox')) {
         return;
       }
 
-      if (event === 'focus' && (type === 'radio' || type === 'checkbox')) {
+      if (e.type === 'focus' && (type === 'radio' || type === 'checkbox')) {
         const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll(`[name="${name}"]`);
         elements && elements.forEach((e: IField) => e.classList.add('touched'));
         return;
       }
 
-      if (event === 'focus' && !element.classList.contains('touched')) {
+      if (e.type === 'focus' && !element.classList.contains('touched')) {
         element.classList.add('touched');
         return;
       }
@@ -134,224 +103,232 @@ export const useReactiveForm = <T>({
       if (type === 'radio' || type === 'checkbox') {
         const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll(`[name="${name}"]`);
         elements && elements.forEach((e: IField) => e.classList.add('dirty'));
-      } else if (event === 'keyup') {
+      } else if (e.type === 'keyup') {
         element.classList.add('dirty');
       }
 
       /** Refresh values and errors with new value */
-      const values = getValues();
-      findKeyAndUpdateValue(name ? name.split(separator) : [], values, element);
-      form.next(values);
+      const keys = name ? name.split(separator) : [];
+      findKeyAndUpdateValue(keys, form.current, element);
+      findKeyAndUpdateValue(keys, validationObject.current, element);
 
       /** Run validation */
-      validateOnChange && dynamicValidation(name, values, element);
+      validateOnChange && dynamicValidation(name, form.current, element);
 
       /** Update on names change */
       if (updateTriggers && name && updateTriggers.indexOf(name) >= 0) {
-        update(values);
+        update(form.current);
       }
-    });
-  };
+    };
 
-  // ===================================================================================================================
+// ===================================================================================================================
 
-  /** Subscribe and resubscribe when update() called */
-  useEffect(() => {
-    unsubSub.next(Date.now());
+    /** Subscribe and resubscribe when update() called */
+    useEffect(() => {
+      let selectors: any = [];
+      let event = 'click';
 
-    if (ref.current) {
-      /** Find inputs and subscribe to value change */
-      const selectors = ref.current.querySelectorAll('[name]');
-      selectors.forEach((field: any) => {
-        let event = 'click';
-        const isSelect: boolean = field.getAttribute('data-select') === 'true';
+      if (ref.current) {
+        /** Find inputs and subscribe to value change */
+        selectors = ref.current.querySelectorAll('[name]');
+        selectors.forEach((field: any) => {
+          const isSelect: boolean = field.getAttribute('data-select') === 'true';
 
-        if ((field.nodeName === 'INPUT' && (field.getAttribute('type') === 'text' ||
-          field.getAttribute('type') === 'password')) ||
-          field.nodeName === 'TEXTAREA') {
-          event = 'keyup';
+          if (field.nodeName === 'INPUT') {
+            if ((field.getAttribute('type') === 'text' ||
+              field.getAttribute('type') === 'password') ||
+              field.nodeName === 'TEXTAREA') {
+              event = 'keyup';
+            }
+
+            if ((field.getAttribute('type') === 'radio' ||
+              (field.getAttribute('type') === 'checkbox'))) {
+              event = 'change'
+            }
+
+          }
+
+          if (field.nodeName === 'SELECT' || isSelect) {
+            event = 'change';
+          }
+
+          if (actionOnChange) {
+            field.addEventListener(event, action);
+          } else {
+            field.addEventListener(event, sub);
+            field.addEventListener('focus', sub);
+            field.addEventListener('blur', sub);
+          }
+        });
+      }
+      return () => {
+        selectors.forEach((field: any) => {
+          field.removeEventListener(event, sub);
+          field.removeEventListener('focus', sub);
+          field.removeEventListener('blur', sub);
+          field.removeEventListener(event, action);
+        });
+      };
+    }, [time]);
+
+// ===================================================================================================================
+
+    /** Refresh form when visibility changes */
+    useEffect(() => {
+      deps.length && update(fields);
+    }, [...deps]);
+
+// ===================================================================================================================
+
+    /** Recursion for updating form value */
+    const findKeyAndUpdateValue = (keys: string[], obj: any, element: IField | null, error?: string): any => {
+
+      if (!keys.length) {
+        return;
+      }
+
+      if (keys.length === 1) {
+        /** If there is error message (create validationObject) */
+        if (error) {
+          obj[keys[0]] = {
+            value: obj[keys[0]],
+            error: error,
+          };
+
+          return obj[keys[0]];
         }
 
-        if (field.nodeName === 'SELECT' || isSelect) {
-          // для ie поменяла событие с input на change
-          event = 'change';
+        if (element) {
+          /** If checkbox then check the presence of the value in array */
+          if (element.getAttribute('type') === 'checkbox') {
+            if (!Array.isArray(obj[keys[0]])) {
+              obj[keys[0]] = [];
+            }
+            const index = obj[keys[0]].indexOf(element.value);
+            obj[keys[0]] = index < 0 ? [...obj[keys[0]], element.value] : obj[keys[0]].filter((v: any) => v !== element.value);
+          } else if (element.getAttribute('type') === 'radio') {
+            obj[keys[0]] = typeof obj[keys[0]] === 'number' ? +element.value : element.value;
+          } else {
+            obj[keys[0]] = element.value;
+          }
         }
-
-        const subCallback = (e: Event) => (e.target as IField); // callback when subscribe fires
-
-        if (actionOnChange) {
-          action(field, event, subCallback);
-        } else {
-          sub(field, event, subCallback);
-          sub(field, 'focus', subCallback);
-          sub(field, 'blur', subCallback);
-        }
-      });
-    }
-    return () => unsubSub.next(Date.now());
-  }, [time]);
-
-  // ===================================================================================================================
-
-  /** Refresh form when visibility changes */
-  useEffect(() => {
-    visible && update(fields);
-  }, [visible, ...deps]);
-
-  // ===================================================================================================================
-
-  /** Recursion for updating form value */
-  const findKeyAndUpdateValue = (keys: string[], obj: any, element: IField | null, error?: string): any => {
-
-    if (!keys.length) {
-      return;
-    }
-
-    if (keys.length === 1) {
-      /** If there is error message (create validationObject) */
-      if (error) {
-        obj[keys[0]] = {
-          value: obj[keys[0]],
-          error: error,
-        };
 
         return obj[keys[0]];
       }
 
-      if (element) {
-        /** If checkbox then check the presence of the value in array */
-        if (element.getAttribute('type') === 'checkbox') {
-          if (!Array.isArray(obj[keys[0]])) {
-            obj[keys[0]] = [];
-          }
-          const index = obj[keys[0]].indexOf(element.value);
-          obj[keys[0]] = index < 0 ? [...obj[keys[0]], element.value] : obj[keys[0]].filter((v: any) => v !== element.value);
-        } else if (element.getAttribute('type') === 'radio') {
-          obj[keys[0]] = typeof obj[keys[0]] === 'number' ? +element.value : element.value;
-        } else {
-          obj[keys[0]] = element.value;
+      /** Recursion over @param obj */
+      for (const k in obj) {
+        if (obj.hasOwnProperty(k) && k === keys[0]) {
+          const tmp = [...keys];
+          tmp.splice(0, 1);
+          return findKeyAndUpdateValue(tmp, obj[k], element, error);
         }
       }
+    };
 
-      return obj[keys[0]];
-    }
+// ===================================================================================================================
 
-    /** Recursion over @param obj */
-    for (const k in obj) {
-      if (obj.hasOwnProperty(k) && k === keys[0]) {
-        const tmp = [...keys];
-        tmp.splice(0, 1);
-        return findKeyAndUpdateValue(tmp, obj[k], element, error);
+    /** Update subject with new values and fields. Update validation object with new structure. */
+    const update = (fields: T) => {
+      form.current = fields;
+      validationObject.current = deepCopy(fields);
+      reload(Date.now());
+    };
+
+// ===================================================================================================================
+
+    /** Validate form by schema */
+    const validate = (): any => {
+      if (!schema) {
+        return true;
       }
-    }
-  };
 
-  // ===================================================================================================================
+      const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll('input.invalid, textarea.invalid');
+      elements && elements.forEach((e: IField) => e.classList.remove('invalid'));
 
-  /** Update subject with new values and fields. Update validation object with new structure. */
-  const update = (fields: T) => {
-    form.next(fields);
-    validationObject.next(deepCopy(fields));
-    reload(Date.now());
-  };
+      // validationObject.current = deepCopy(form.current);
 
-  // ===================================================================================================================
+      try {
+        schema.validateSync(form.current, { abortEarly: false });
+        update(form.current);
 
-  /** Validate form by schema */
-  const validate = (): boolean => {
-    if (!schema) {
-      return true;
-    }
+        return true;
+      } catch (e) {
+        e.inner.forEach((item: any) => {
+          errorsMap.current.set(item.path, e.message);
 
-    const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll('input.invalid, textarea.invalid');
-    elements && elements.forEach((e: IField) => e.classList.remove('invalid'));
+          /** Fill validationObject with error messages */
+          const keys = item.path.split(/\[|].|\./);
+          findKeyAndUpdateValue(keys, validationObject.current, null, item.message);
 
-    const values = form.getValue();
-    validationObject.next(deepCopy(values));
+          const selector = item.path.replace(/[[.]/g, separator).replace(/]/g, '');
+          const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll(`[name="${selector}"]`);
+          elements && elements.forEach((e: IField) => e.classList.add('invalid'));
+        });
 
-    try {
-      schema.validateSync(values, { abortEarly: false });
-      update(values);
+        reload(Date.now());
+        return false;
+      }
+    };
 
-      return true;
-    } catch (e) {
-      const errors = validationObject.getValue();
+// ===================================================================================================================
 
-      e.inner.forEach((item: ValidationError) => {
-        errorsMap.set(item.path, e.message);
+    /** Validate when value of input changed */
+    const dynamicValidation = (name: string | null, values: T, element: IField) => {
+      let path;
+      path = name ? name.replace(new RegExp(separator, 'g'), '_')
+        .replace(/(_)/g, (_, sign: string, offset: number) =>
+          /\d/g.test(name[offset + 1]) ? '[' : /\d/g.test(name[offset - 1]) ? ']' : sign)
+        .replace(/(])/g, (_, sign: string, offset: number) =>
+          /\w/g.test(name[offset + 1]) ? '].' : sign) : '';
 
-        /** Fill validationObject with error messages */
-        const keys = item.path.split(/\[|].|\./);
-        findKeyAndUpdateValue(keys, errors, null, item.message);
+      const type = element.getAttribute('type');
+      let shouldUpdate;
+      let valid: boolean;
 
-        const selector = item.path.replace(/[[.]/g, separator).replace(/]/g, '');
-        const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll(`[name="${selector}"]`);
-        elements && elements.forEach((e: IField) => e.classList.add('invalid'));
-      });
+      // Reload for visual change
+      const isSelect: boolean = element.getAttribute('data-select') === 'true';
 
-      validationObject.next(deepCopy(errors));
-      reload(Date.now());
-      return false;
-    }
-  };
+      const errors = validationObject.current;
+      const keys = name ? name.split(separator) : [];
 
-  // ===================================================================================================================
+      try {
+        schema.validateSyncAt(path, values);
+        valid = true;
+        shouldUpdate = errorsMap.current.get(path) !== '' && errorsMap.current.get(path) !== undefined;
+        errorsMap.current.set(path, '');
+        findKeyAndUpdateValue(keys, errors, element);
+      } catch (e) {
+        valid = false;
+        shouldUpdate = errorsMap.current.get(path) !== e.message;
+        errorsMap.current.set(path, findKeyAndUpdateValue(keys, errors, element, e.message).error);
+      }
 
-  /** Validate when value of input changed */
-  const dynamicValidation = (name: string | null, values: T, element: IField) => {
-    let path;
-    path = name ? name.replace(new RegExp(separator, 'g'), '_')
-      .replace(/(_)/g, (_, sign: string, offset: number) =>
-        /\d/g.test(name[offset + 1]) ? '[' : /\d/g.test(name[offset - 1]) ? ']' : sign)
-      .replace(/(])/g, (_, sign: string, offset: number) =>
-        /\w/g.test(name[offset + 1]) ? '].' : sign) : '';
+      validationObject.current = errors;
 
-    const type = element.getAttribute('type');
-    let shouldUpdate;
-    let valid: boolean;
+      if (type === 'radio' || type === 'checkbox') {
+        const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll(`[name="${name}"]`);
+        elements && elements.forEach((e: IField) => {
+          valid ? e.classList.remove('invalid') : e.classList.add('invalid');
+        });
+      } else {
+        valid ? element.classList.remove('invalid') : element.classList.add('invalid');
+      }
 
-    // Reload for visual change
-    const isSelect: boolean = element.getAttribute('data-select') === 'true';
+      if (isSelect) {
+        reload(Date.now());
+      } else {
+        shouldUpdate && reload(Date.now());
+      }
+    };
 
-    const errors = validationObject.getValue();
-    const keys = name ? name.split(separator) : [];
+// ===================================================================================================================
 
-    try {
-      schema.validateSyncAt(path, values);
-      valid = true;
-      shouldUpdate = errorsMap.get(path) !== '' && errorsMap.get(path) !== undefined;
-      errorsMap.set(path, '');
-      findKeyAndUpdateValue(keys, errors, element);
-    } catch (e) {
-      valid = false;
-      shouldUpdate = errorsMap.get(path) !== e.message;
-      errorsMap.set(path, findKeyAndUpdateValue(keys, errors, element, e.message).error);
-    }
+    /** Clear fields */
+    const clear = () => update(fields);
 
-    validationObject.next(deepCopy(errors));
+// ===================================================================================================================
 
-    if (type === 'radio' || type === 'checkbox') {
-      const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll(`[name="${name}"]`);
-      elements && elements.forEach((e: IField) => {
-        valid ? e.classList.remove('invalid') : e.classList.add('invalid');
-      });
-    } else {
-      valid ? element.classList.remove('invalid') : element.classList.add('invalid');
-    }
-
-    if (isSelect) {
-      reload(Date.now());
-    } else {
-      shouldUpdate && reload(Date.now());
-    }
-  };
-
-  // ===================================================================================================================
-
-  /** Clear fields */
-  const clear = () => update(fields);
-
-  // ===================================================================================================================
-
-  return { values: getValues, ref, update, validate, getErrors, clear, errors: getErrors };
-};
+    return { values: form.current, ref, update, validate, clear, errors: validationObject.current };
+  }
+;
