@@ -243,7 +243,7 @@ export const useReactiveForm = <T>({
     /** Update subject with new values and fields. Update validation object with new structure. */
     const update = (fields: T) => {
       form.current = fields;
-      validationObject.current = deepCopy(fields);
+      validationObject.current = deepCopy(fields, validationObject.current);
       reload(Date.now());
     };
 
