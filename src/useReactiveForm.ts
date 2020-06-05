@@ -42,7 +42,19 @@ export const useReactiveForm = <T>({
                                    }: IUseReactiveForm<T>): IUseFormResult<T> => {
 
     /** Deep copy object */
-    const deepCopy = useCallback((obj: T): T => JSON.parse(JSON.stringify(obj)), []);
+    const deepCopy = useCallback((obj: any, preserve?: any): T => {
+      let clone: any = {};
+
+      for (const key in obj) {
+        if (typeof (obj[key]) === 'object' && obj[key] !== null) {
+          clone[key] = preserve ? deepCopy(obj[key], preserve[key]) : deepCopy(obj[key]);
+        } else {
+          clone[key] = preserve && key ? preserve[key] : obj[key];
+        }
+      }
+
+      return clone;
+    }, []);
 
     /** Form reference */
     const ref = useRef<HTMLFormElement>(null);
