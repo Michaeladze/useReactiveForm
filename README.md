@@ -5,7 +5,9 @@ React hook for gathering and validating form data without unnecessary re-renders
 **Links:**  
 [1. Example](https://stackblitz.com/edit/react-ts-edmmec?file=Example.tsx)   
 [2. NPM](https://www.npmjs.com/package/use-reactive-form)  
-[3. GitHub](https://github.com/Michaeladze/useReactiveForm)
+[3. GitHub](https://github.com/Michaeladze/useReactiveForm)  
+[4. Medium](https://medium.com/swlh/painless-react-form-handling-with-usereactiveform-827312878458?source=friends_link&sk=d86dfa4f1ce34549dc448296fb510dda)
+
 
 ### Install:
     npm install use-reactive-form
@@ -80,7 +82,7 @@ ___
 
 #### Step 4: Use Hook
 
-    const { values, ref, update, validate, getErrors, clear } = useReactiveForm<IFormData>(config);
+    const { values, ref, update, validate, clear } = useReactiveForm<IFormData>(config);
     
     /**
     values - get current form state
