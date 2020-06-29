@@ -1,6 +1,6 @@
 {
   "name": "use-reactive-form",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "MIT",
   "author": {
     "name": "Michael Kutateladze",
@@ -57,5 +57,6 @@
     "typescript": "3.9.3",
     "yup": "0.27.0",
     "react": "16.13.1"
-  }
+  },
+  "publishConfig": { "registry": "https://npm.pkg.github.com/" }
 }

@@ -1,6 +1,6 @@
 # useReactiveForm
 
-React hook for gathering and validating form data without unnecessary re-renders. 
+Declarative React hook for gathering and validating form data without unnecessary re-renders. 
 
 **Links:**  
 [1. Example](https://stackblitz.com/edit/react-ts-edmmec?file=Example.tsx)   

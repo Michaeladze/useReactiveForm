@@ -220,6 +220,19 @@ export const useReactiveForm = <T>({
             obj[keys[0]] = index < 0 ? [...obj[keys[0]], element.value] : obj[keys[0]].filter((v: any) => v !== element.value);
           } else if (element.getAttribute('type') === 'radio') {
             obj[keys[0]] = typeof obj[keys[0]] === 'number' ? +element.value : element.value;
+          } else if (element.tagName === 'SELECT') {
+            const multiple = element.getAttribute('multiple');
+            if (multiple === '' || multiple) {
+              if (!Array.isArray(obj[keys[0]])) {
+                obj[keys[0]] = [];
+              }
+
+              obj[keys[0]] = Array.from(element.getElementsByTagName('option'))
+                .filter((o: HTMLOptionElement) => o.selected)
+                .map((o: HTMLOptionElement) => o.value);
+            } else {
+              obj[keys[0]] = element.value;
+            }
           } else {
             obj[keys[0]] = element.value;
           }
