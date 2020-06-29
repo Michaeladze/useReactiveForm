@@ -57,6 +57,5 @@
     "typescript": "3.9.3",
     "yup": "0.27.0",
     "react": "16.13.1"
-  },
-  "publishConfig": { "registry": "https://npm.pkg.github.com/" }
+  }
 }
