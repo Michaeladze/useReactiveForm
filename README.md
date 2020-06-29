@@ -73,7 +73,7 @@ ___
    
 ##### Config keys:   
     fields: T - Form fields / structure  
-    deps?: boolean[] - Array of boolean dependencies that trigger re-render 
+    deps?: any[] - Array of dependencies that trigger re-render 
     schema?: any - Validation schema  
     separator?: string - Separator for name property of inputs. _ is set by default  
     validateOnChange?: boolean - Validate on input change
