@@ -148,8 +148,7 @@ export const useReactiveForm = <T>({
 
           if (field.nodeName === 'INPUT') {
             if ((field.getAttribute('type') === 'text' ||
-              field.getAttribute('type') === 'password') ||
-              field.nodeName === 'TEXTAREA') {
+              field.getAttribute('type') === 'password')) {
               event = 'keyup';
             }
 
@@ -158,6 +157,10 @@ export const useReactiveForm = <T>({
               event = 'change'
             }
 
+          }
+
+          if (field.nodeName === 'TEXTAREA') {
+            event = 'keyup';
           }
 
           if (field.nodeName === 'SELECT' || isSelect) {
