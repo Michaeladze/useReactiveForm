@@ -1,6 +1,6 @@
 {
   "name": "use-reactive-form",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "license": "MIT",
   "author": {
     "name": "Michael Kutateladze",
@@ -18,6 +18,10 @@
     {
       "name": "Anna Darina",
       "url": "https://github.com/annadarina"
+    },
+    {
+      "name": "George Kutateladze",
+      "url": "https://github.com/GeorgKutateladze"
     }
   ],
   "main": "lib/index.js",
