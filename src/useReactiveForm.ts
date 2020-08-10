@@ -72,7 +72,6 @@ export const useReactiveForm = <T>({
     /** Action callback subscription */
     const action = (e: Event) => {
       const element = e.target as IField;
-      const isSelect: boolean = element.getAttribute('data-select') === 'true';
       const name = element.getAttribute('name');
 
       /** Refresh values and errors with new value */
@@ -81,10 +80,6 @@ export const useReactiveForm = <T>({
       findKeyAndUpdateValue(keys, validationObject.current, element);
 
       actionOnChange && actionOnChange(form.current);
-
-      if (isSelect) {
-        reload(Date.now());
-      }
     };
 
 // ===================================================================================================================
@@ -115,7 +110,7 @@ export const useReactiveForm = <T>({
       if (type === 'radio' || type === 'checkbox') {
         const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll(`[name="${name}"]`);
         elements && elements.forEach((e: IField) => e.classList.add('dirty'));
-      } else if (e.type === 'keyup') {
+      } else if (e.type === 'change') {
         element.classList.add('dirty');
       }
 
@@ -138,34 +133,33 @@ export const useReactiveForm = <T>({
     /** Subscribe and resubscribe when update() called */
     useEffect(() => {
       let selectors: any = [];
-      let event = 'click';
+      let event = 'change';
 
       if (ref.current) {
         /** Find inputs and subscribe to value change */
         selectors = ref.current.querySelectorAll('[name]');
         selectors.forEach((field: any) => {
-          const isSelect: boolean = field.getAttribute('data-select') === 'true';
 
-          if (field.nodeName === 'INPUT') {
-            if ((field.getAttribute('type') === 'text' ||
-              field.getAttribute('type') === 'password')) {
-              event = 'keyup';
-            }
-
-            if ((field.getAttribute('type') === 'radio' ||
-              (field.getAttribute('type') === 'checkbox'))) {
-              event = 'change'
-            }
-
-          }
-
-          if (field.nodeName === 'TEXTAREA') {
-            event = 'keyup';
-          }
-
-          if (field.nodeName === 'SELECT' || isSelect) {
-            event = 'change';
-          }
+          // if (field.nodeName === 'INPUT') {
+          //   if ((field.getAttribute('type') === 'text' ||
+          //     field.getAttribute('type') === 'password')) {
+          //     event = 'keyup';
+          //   }
+          //
+          //   if ((field.getAttribute('type') === 'radio' ||
+          //     (field.getAttribute('type') === 'checkbox'))) {
+          //     event = 'change'
+          //   }
+          //
+          // }
+          //
+          // if (field.nodeName === 'TEXTAREA') {
+          //   event = 'keyup';
+          // }
+          //
+          // if (field.nodeName === 'SELECT') {
+          //   event = 'change';
+          // }
 
           if (actionOnChange) {
             field.addEventListener(event, action);
