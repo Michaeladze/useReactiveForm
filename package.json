@@ -1,6 +1,6 @@
 {
   "name": "use-reactive-form",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "license": "MIT",
   "author": {
     "name": "Michael Kutateladze",
@@ -40,7 +40,8 @@
   ],
   "scripts": {
     "build": "rm ./lib/* && tsc",
-    "npm:publish": "npm pack"
+    "npm:publish": "npm pack",
+    "release": "release-it"
   },
   "peerDependencies": {
     "react": "*"
@@ -51,15 +52,20 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/jest": "24.9.1",
     "@types/react": "16.9.35",
     "@types/yup": "0.29.0",
+    "react": "16.13.1",
+    "release-it": "^13.6.6",
     "tslib": "1.10.0",
     "typescript": "3.9.3",
-    "yup": "0.27.0",
-    "react": "16.13.1"
+    "yup": "0.27.0"
+  },
+  "release-it": {
+    "github": {
+      "release": true
+    }
   }
 }
