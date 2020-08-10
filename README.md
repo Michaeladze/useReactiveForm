@@ -67,25 +67,27 @@ yarn add use-reactive-form
 ```   
 ##### Config keys:   
 ```js
-    fields: T // Form fields / structure  
-    deps?: any[] // Array of dependencies that trigger re-render 
-    schema?: any // Validation schema  
-    separator?: string // Separator for name property of inputs. _ is set by default  
-    validateOnChange?: boolean // Validate on input change
-    actionOnChange?: (values: T) => void // Fire function on input change
-    updateTriggers? string[] // array of name attributes whose change triggers re-render
+{
+    fields: T; // Form fields / structure  
+    deps?: any[]; // Array of dependencies that trigger re-render 
+    schema?: any; // Validation schema  
+    separator?: string; // Separator for name property of inputs. _ is set by default  
+    validateOnChange?: boolean; // Validate on input change
+    actionOnChange?: (values: T) => void; // Fire function on input change
+    updateTriggers? string[]; // Array of name attributes whose change triggers re-render
+}
 ```
 #### Step 4: Use Hook
 ```js
     const { values, ref, update, validate, clear } = useReactiveForm<IFormData>(config);
     
     /**
-    values - get current form state
+    values - object with current form state
     ref - reference to <form> tag
+    errors - object of errors after validation 
     validate() - function which validates the form
-    errors - gets errors after validation 
-    clear() - function which form values form and errors
-    update() - function which re-renders form. It is needed in case when you dynamically add fields.
+    clear() - function which clears form values form and errors
+    update() - function which re-renders form. It is needed when you dynamically add/remove fields.
     **/
 ```  
 #### Step 5: Connect hook to the form.
