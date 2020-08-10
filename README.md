@@ -10,20 +10,14 @@ Declarative React hook for gathering and validating form data without unnecessar
 
 
 ### Install:
-    npm install use-reactive-form
-    yarn add use-reactive-form
-
+```
+npm install use-reactive-form
+```
+```
+yarn add use-reactive-form
+```
 
 ### Usage:
-
-The idea is that form state stored in `useRef`. When it changes,
-it does not re-render the component. Ways to re-render form:
-1. Call `validate()` function.
-2. Use `validateOnChange: true` which is basically the same as #1. If after validation message of the error
-has not changed, the component **will not** re-render.
-3. Call `update()` function.
-___
-
 #### Step 1: Describe initial values and interface.
 ```js
     interface IFormData = {
@@ -34,7 +28,7 @@ ___
         }[]
     }
     
-    const initial: IFormData = {
+    const fields: IFormData = {
         user: '',
         books: [
           {
@@ -50,7 +44,7 @@ ___
     
     // ...
     
-    const validation = object().shape({
+    const schema = object().shape({
         user: string().required('This field is required')
                       .max(20, 'Character limit exceeded'),
         books: array().of(object().shape({
@@ -66,8 +60,8 @@ ___
     // ...
     
     const config: IUseReactiveForm<IFormData> = {
-        fields: initial,
-        schema: validation,
+        fields,
+        schema,
         validateOnChange: true
       };
 ```   
