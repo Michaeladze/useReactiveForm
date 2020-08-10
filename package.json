@@ -33,10 +33,14 @@
     "type": "git",
     "url": "https://github.com/Michaeladze/useReactiveForm"
   },
+  "homepage": "https://github.com/Michaeladze/useReactiveForm",
   "keywords": [
     "react",
     "form",
-    "hooks"
+    "forms",
+    "hooks",
+    "react-hook",
+    "typescript"
   ],
   "scripts": {
     "build": "rm ./lib/* && tsc",
@@ -67,11 +71,5 @@
     "github": {
       "release": true
     }
-  },
-  "git": {
-    "changelog": "npx auto-changelog --stdout --commit-limit false --unreleased --template https://raw.githubusercontent.com/release-it/release-it/master/templates/changelog-compact.hbs"
-  },
-  "hooks": {
-    "after:bump": "npx auto-changelog -p"
   }
 }
