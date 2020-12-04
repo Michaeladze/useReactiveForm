@@ -25,7 +25,7 @@ export type IField = HTMLInputElement | HTMLTextAreaElement;
 export interface IUseFormResult<T> {
   ref: Ref<HTMLFormElement>;
   values: T;
-  errors: T;
+  errors: any;
   update: (f: T) => void;
   validate: () => boolean;
   clear: () => void;
