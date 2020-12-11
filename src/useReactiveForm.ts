@@ -240,7 +240,7 @@ export const useReactiveForm = <T>({
     const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll('input.invalid, textarea.invalid');
     elements && elements.forEach((e: IField) => e.classList.remove('invalid'));
 
-    // validationObject.current = deepCopy(form.current);
+    validationObject.current = deepCopy(form.current);
 
     try {
       schema.validateSync(form.current, { abortEarly: false });
