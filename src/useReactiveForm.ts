@@ -331,7 +331,7 @@ function deepCopy(obj: any, preserve?: any): any {
   let clone: any = {};
 
   for (const key in obj) {
-    if (typeof (obj[key]) === 'object' && obj[key] !== null && !(obj[key] instanceof Date)) {
+    if (typeof (obj[key]) === 'object' && obj[key] !== null && obj[key] !== undefined && !(obj[key] instanceof Date)) {
       clone[key] = preserve ? deepCopy(obj[key], preserve[key]) : deepCopy(obj[key]);
     } else {
       clone[key] = preserve && key ? preserve[key] : obj[key];
@@ -343,7 +343,7 @@ function deepCopy(obj: any, preserve?: any): any {
 
 /** Flatten object */
 function flattenObject(obj: any, separator = '_', key: string = '', map: any = {}): any {
-  if (typeof obj === 'object' && !(obj[key] instanceof Date)) {
+  if (typeof obj === 'object' && obj !== null && obj !== undefined && !(obj instanceof Date)) {
     Object.keys(obj).forEach((k: string) => {
       const newKey = !key ? k : separator + k;
       flattenObject(obj[k], separator, key += newKey, map);
