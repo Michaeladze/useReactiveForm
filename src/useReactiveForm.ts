@@ -1,4 +1,6 @@
-import { Ref, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Ref, RefObject, useEffect, useMemo, useRef, useState
+} from 'react';
 
 /** In interface of input values */
 export interface IUseReactiveForm<T> {
@@ -38,9 +40,8 @@ export const useReactiveForm = <T>({
                                      separator = '_',
                                      validateOnChange = false,
                                      actionOnChange,
-                                     updateTriggers = [],
+                                     updateTriggers = []
                                    }: IUseReactiveForm<T>): IUseFormResult<T> => {
-
   /** Form reference */
   const ref = useRef<HTMLFormElement>(null);
   /** Reload function */
@@ -54,7 +55,7 @@ export const useReactiveForm = <T>({
 
   /** Map of existing fields */
   const fieldsMap = useMemo(() => {
-    return flattenObject(fields, separator);
+    return flattenObject(fields, ref, separator);
   }, [fields]);
 
   // ===================================================================================================================
@@ -72,7 +73,7 @@ export const useReactiveForm = <T>({
     actionOnChange && actionOnChange(form.current);
   };
 
-// ===================================================================================================================
+  // ===================================================================================================================
 
   /** Event subscription */
   const sub = (e: Event) => {
@@ -118,7 +119,7 @@ export const useReactiveForm = <T>({
     }
   };
 
-// ===================================================================================================================
+  // ===================================================================================================================
 
   /** Subscribe and resubscribe when update() called */
   useEffect(() => {
@@ -131,7 +132,6 @@ export const useReactiveForm = <T>({
       selectors.forEach((field: IField) => {
         const name = field.getAttribute('name');
         if (name && fieldsMap[name]) {
-
           if (actionOnChange) {
             field.addEventListener(event, action);
           } else {
@@ -139,7 +139,6 @@ export const useReactiveForm = <T>({
             field.addEventListener('focus', sub);
             field.addEventListener('blur', sub);
           }
-
         }
       });
     }
@@ -153,18 +152,17 @@ export const useReactiveForm = <T>({
     };
   }, [time, fieldsMap]);
 
-// ===================================================================================================================
+  // ===================================================================================================================
 
   /** Refresh form when visibility changes */
   useEffect(() => {
     deps.length && update(fields);
   }, [...deps]);
 
-// ===================================================================================================================
+  // ===================================================================================================================
 
   /** Recursion for updating form value */
   const findKeyAndUpdateValue = (keys: string[], obj: any, element: IField | null, error?: string): any => {
-
     if (!keys.length) {
       return;
     }
@@ -174,7 +172,7 @@ export const useReactiveForm = <T>({
       if (error) {
         obj[keys[0]] = {
           value: obj[keys[0]],
-          error: error,
+          error: error
         };
         return obj[keys[0]];
       }
@@ -186,7 +184,8 @@ export const useReactiveForm = <T>({
             obj[keys[0]] = [];
           }
           const index = obj[keys[0]].indexOf(element.value);
-          obj[keys[0]] = index < 0 ? [...obj[keys[0]], element.value] : obj[keys[0]].filter((v: any) => v !== element.value);
+          obj[keys[0]] =
+            index < 0 ? [...obj[keys[0]], element.value] : obj[keys[0]].filter((v: any) => v !== element.value);
         } else if (element.getAttribute('type') === 'radio') {
           obj[keys[0]] = typeof obj[keys[0]] === 'number' ? +element.value : element.value;
         } else if (element.tagName === 'SELECT') {
@@ -220,7 +219,7 @@ export const useReactiveForm = <T>({
     }
   };
 
-// ===================================================================================================================
+  // ===================================================================================================================
 
   /** Update subject with new values and fields. Update validation object with new structure. */
   const update = (fields: T) => {
@@ -229,7 +228,7 @@ export const useReactiveForm = <T>({
     reload(Date.now());
   };
 
-// ===================================================================================================================
+  // ===================================================================================================================
 
   /** Validate form by schema */
   const validate = (): any => {
@@ -237,7 +236,8 @@ export const useReactiveForm = <T>({
       return true;
     }
 
-    const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll('input.invalid, textarea.invalid');
+    const elements: NodeListOf<IField> | null =
+      ref.current && ref.current.querySelectorAll('input.invalid, textarea.invalid');
     elements && elements.forEach((e: IField) => e.classList.remove('invalid'));
 
     validationObject.current = deepCopy(form.current);
@@ -265,16 +265,19 @@ export const useReactiveForm = <T>({
     }
   };
 
-// ===================================================================================================================
+  // ===================================================================================================================
 
   /** Validate when value of input changed */
   const dynamicValidation = (name: string | null, values: T, element: IField) => {
     let path;
-    path = name ? name.replace(new RegExp(separator, 'g'), '_')
-      .replace(/(_)/g, (_, sign: string, offset: number) =>
-        /\d/g.test(name[offset + 1]) ? '[' : /\d/g.test(name[offset - 1]) ? ']' : sign)
-      .replace(/(])/g, (_, sign: string, offset: number) =>
-        /\w/g.test(name[offset + 1]) ? '].' : sign) : '';
+    path = name
+      ? name
+        .replace(new RegExp(separator, 'g'), '_')
+        .replace(/(_)/g, (_, sign: string, offset: number) =>
+          /\d/g.test(name[offset + 1]) ? '[' : /\d/g.test(name[offset - 1]) ? ']' : sign
+        )
+        .replace(/(])/g, (_, sign: string, offset: number) => (/\w/g.test(name[offset + 1]) ? '].' : sign))
+      : '';
 
     const type = element.getAttribute('type');
     let shouldUpdate;
@@ -302,7 +305,8 @@ export const useReactiveForm = <T>({
 
     if (type === 'radio' || type === 'checkbox') {
       const elements: NodeListOf<IField> | null = ref.current && ref.current.querySelectorAll(`[name="${name}"]`);
-      elements && elements.forEach((e: IField) => {
+      elements &&
+      elements.forEach((e: IField) => {
         valid ? e.classList.remove('invalid') : e.classList.add('invalid');
       });
     } else {
@@ -316,14 +320,21 @@ export const useReactiveForm = <T>({
     }
   };
 
-// ===================================================================================================================
+  // ===================================================================================================================
 
   /** Clear fields */
   const clear = () => update(fields);
 
-// ===================================================================================================================
+  // ===================================================================================================================
 
-  return { values: form.current, ref, update, validate, clear, errors: validationObject.current };
+  return {
+    values: form.current,
+    ref,
+    update,
+    validate,
+    clear,
+    errors: validationObject.current
+  };
 };
 
 /** Deep copy object */
@@ -331,7 +342,7 @@ function deepCopy(obj: any, preserve?: any): any {
   let clone: any = {};
 
   for (const key in obj) {
-    if (typeof (obj[key]) === 'object' && obj[key] !== null && obj[key] !== undefined && !(obj[key] instanceof Date)) {
+    if (typeof obj[key] === 'object' && obj[key] !== null && obj[key] !== undefined && !(obj[key] instanceof Date)) {
       clone[key] = preserve ? deepCopy(obj[key], preserve[key]) : deepCopy(obj[key]);
     } else {
       clone[key] = preserve && key ? preserve[key] : obj[key];
@@ -342,17 +353,32 @@ function deepCopy(obj: any, preserve?: any): any {
 }
 
 /** Flatten object */
-function flattenObject(obj: any, separator = '_', key: string = '', map: any = {}): any {
+function flattenObject(
+  obj: any,
+  ref: RefObject<HTMLFormElement>,
+  separator = '_',
+  key: string = '',
+  map: any = {},
+  isArray: boolean = false
+): any {
   if (typeof obj === 'object' && obj !== null && obj !== undefined && !(obj instanceof Date)) {
     Object.keys(obj).forEach((k: string) => {
       const newKey = !key ? k : separator + k;
-      flattenObject(obj[k], separator, key += newKey, map);
-      key = key.replace(newKey, '')
+      flattenObject(obj[k], ref, separator, (key += newKey), map, Array.isArray(obj));
+      key = key.replace(newKey, '');
     });
   } else {
-    map[key] = true;
-  }
+    if (isArray) {
+      const splitKey = key.split('_');
+      const lastIndex = splitKey.pop();
+      const isArrayIndex = lastIndex && !isNaN(+lastIndex);
 
+      if (isArrayIndex) {
+        map[splitKey.join('_')] = true;
+      }
+    } else {
+      map[key] = true;
+    }
+  }
   return map;
 }
-// ===================================================================================================================
