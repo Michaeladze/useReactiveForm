@@ -367,6 +367,7 @@ function flattenObject(
       flattenObject(obj[k], ref, separator, (key += newKey), map, Array.isArray(obj));
       key = key.replace(newKey, '');
     });
+    map[key] = true;
   } else {
     if (isArray) {
       const splitKey = key.split('_');
