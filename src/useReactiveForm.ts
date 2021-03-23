@@ -1,6 +1,4 @@
-import {
-  Ref, RefObject, useEffect, useMemo, useRef, useState
-} from 'react';
+import { Ref, useEffect, useRef, useState } from 'react';
 
 /** In interface of input values */
 export interface IUseReactiveForm<T> {
@@ -52,11 +50,6 @@ export const useReactiveForm = <T>({
   let validationObject = useRef(deepCopy(fields));
   /** Errors map for preventing re-renders on same error on dynamic validation */
   const errorsMap = useRef(new Map());
-
-  /** Map of existing fields */
-  const fieldsMap = useMemo(() => {
-    return flattenObject(fields, ref, separator);
-  }, [fields]);
 
   // ===================================================================================================================
 
@@ -131,7 +124,7 @@ export const useReactiveForm = <T>({
       selectors = ref.current.querySelectorAll('[name]');
       selectors.forEach((field: IField) => {
         const name = field.getAttribute('name');
-        if (name && fieldsMap[name]) {
+        if (name) {
           if (actionOnChange) {
             field.addEventListener(event, action);
           } else {
@@ -150,7 +143,7 @@ export const useReactiveForm = <T>({
         field.removeEventListener(event, action);
       });
     };
-  }, [time, fieldsMap]);
+  }, [time]);
 
   // ===================================================================================================================
 
@@ -350,36 +343,4 @@ function deepCopy(obj: any, preserve?: any): any {
   }
 
   return clone;
-}
-
-/** Flatten object */
-function flattenObject(
-  obj: any,
-  ref: RefObject<HTMLFormElement>,
-  separator = '_',
-  key: string = '',
-  map: any = {},
-  isArray: boolean = false
-): any {
-  if (typeof obj === 'object' && obj !== null && obj !== undefined && !(obj instanceof Date)) {
-    Object.keys(obj).forEach((k: string) => {
-      const newKey = !key ? k : separator + k;
-      flattenObject(obj[k], ref, separator, (key += newKey), map, Array.isArray(obj));
-      key = key.replace(newKey, '');
-    });
-    map[key] = true;
-  } else {
-    if (isArray) {
-      const splitKey = key.split('_');
-      const lastIndex = splitKey.pop();
-      const isArrayIndex = lastIndex && !isNaN(+lastIndex);
-
-      if (isArrayIndex) {
-        map[splitKey.join('_')] = true;
-      }
-    } else {
-      map[key] = true;
-    }
-  }
-  return map;
 }
